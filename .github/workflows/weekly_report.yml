@@ -28,10 +28,10 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GHL_API_KEY: ${{ secrets.GHL_API_KEY }}
           GHL_LOCATION_ID: ${{ secrets.GHL_LOCATION_ID }}
-          REPORT_TO_EMAIL: jemina@tulivodigital.com
-          REPORT_TO_NAME: Jemina
-          REPORT_FROM_NAME: Tulivo Digital Research & Strategy
+          GHL_CLIENT_TAG: ${{ secrets.GHL_CLIENT_TAG }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
           SENDING_DOMAIN: tulivodigital.com
+          FALLBACK_DOC_URL: https://tulivodigital.com
         run: python run_weekly.py
 
       - name: Commit report to repository

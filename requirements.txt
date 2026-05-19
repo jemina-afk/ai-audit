@@ -2,3 +2,5 @@ anthropic
 requests
 python-dotenv
 markdown
+google-api-python-client
+google-auth
