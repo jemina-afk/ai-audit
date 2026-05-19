@@ -1,0 +1,43 @@
+name: Weekly AI & Automation Report
+
+on:
+  schedule:
+    # Every Monday at 07:00 UTC (07:00 UK winter / 08:00 UK summer)
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+    # Allows you to run it manually from GitHub at any time
+
+jobs:
+  generate-and-send:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate and send report
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GHL_API_KEY: ${{ secrets.GHL_API_KEY }}
+          GHL_LOCATION_ID: ${{ secrets.GHL_LOCATION_ID }}
+          REPORT_TO_EMAIL: jemina@tulivodigital.com
+          REPORT_TO_NAME: Jemina
+          REPORT_FROM_NAME: Tulivo Digital Research & Strategy
+          SENDING_DOMAIN: tulivodigital.com
+        run: python run_weekly.py
+
+      - name: Commit report to repository
+        run: |
+          git config user.name  "Tulivo Report Bot"
+          git config user.email "bot@tulivodigital.com"
+          git add weekly-report-*.md
+          git diff --staged --quiet || git commit -m "Weekly report $(date +'%Y-%m-%d')"
+          git push
