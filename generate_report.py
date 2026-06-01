@@ -138,7 +138,7 @@ def generate_report() -> str:
     # Agentic loop — Claude searches the web and compiles the report
     while True:
         response = client.messages.create(
-            model="claude-opus-4-7",
+            model="claude-opus-4-8",
             max_tokens=8000,
             system=PROMPT_SYSTEM,
             tools=[{"type": "web_search_20250305", "name": "web_search"}],
