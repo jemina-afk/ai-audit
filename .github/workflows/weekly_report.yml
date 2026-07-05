@@ -5,7 +5,10 @@ on:
     # Every Monday at 07:00 UTC (07:00 UK winter / 08:00 UK summer)
     - cron: '0 7 * * 1'
   workflow_dispatch:
-    # Allows you to run it manually from GitHub at any time
+    # Run manually from GitHub any time: Actions tab → Weekly AI Report → Run workflow
+
+permissions:
+  contents: write   # FIX 3: needed to commit and push the saved report file
 
 jobs:
   generate-and-send:
@@ -23,21 +26,18 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Generate and send report
+      - name: Generate report and notify clients
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          GHL_API_KEY: ${{ secrets.GHL_API_KEY }}
-          GHL_LOCATION_ID: ${{ secrets.GHL_LOCATION_ID }}
-          GHL_CLIENT_TAG: ${{ secrets.GHL_CLIENT_TAG }}
-          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-          SENDING_DOMAIN: tulivodigital.com
-          FALLBACK_DOC_URL: https://tulivodigital.com
+          ANTHROPIC_API_KEY:    ${{ secrets.ANTHROPIC_API_KEY }}
+          GHL_WEBHOOK_URL:      ${{ secrets.GHL_WEBHOOK_URL }}
+          GOOGLE_CREDENTIALS:   ${{ secrets.GOOGLE_CREDENTIALS }}
+          FALLBACK_DOC_URL:     https://tulivodigital.com
         run: python run_weekly.py
 
-      - name: Commit report to repository
+      - name: Save report to repository
         run: |
           git config user.name  "Tulivo Report Bot"
           git config user.email "bot@tulivodigital.com"
           git add weekly-report-*.md
           git diff --staged --quiet || git commit -m "Weekly report $(date +'%Y-%m-%d')"
-          git push
+          git push origin HEAD

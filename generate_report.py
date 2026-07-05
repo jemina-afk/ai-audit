@@ -133,43 +133,22 @@ def generate_report() -> str:
         next_report_date=next_monday,
     )
 
-    messages = [{"role": "user", "content": user_message}]
+    # web_search_20250305 is a server-side built-in tool — Anthropic executes
+    # the searches internally and returns the final answer in a single response.
+    # No tool-result loop needed.
+    response = client.messages.create(
+        model="claude-opus-4-7",
+        max_tokens=8000,
+        system=PROMPT_SYSTEM,
+        tools=[{"type": "web_search_20250305", "name": "web_search"}],
+        messages=[{"role": "user", "content": user_message}],
+    )
 
-    # Agentic loop — Claude searches the web and compiles the report
-    while True:
-        response = client.messages.create(
-            model="claude-opus-4-7",
-            max_tokens=8000,
-            system=PROMPT_SYSTEM,
-            tools=[{"type": "web_search_20250305", "name": "web_search"}],
-            messages=messages,
-        )
-
-        messages.append({"role": "assistant", "content": response.content})
-
-        if response.stop_reason == "end_turn":
-            break
-
-        # If Claude used a tool, feed results back and continue
-        if response.stop_reason == "tool_use":
-            tool_results = [
-                {
-                    "type": "tool_result",
-                    "tool_use_id": block.id,
-                    "content": getattr(block, "content", ""),
-                }
-                for block in response.content
-                if block.type == "tool_use"
-            ]
-            if tool_results:
-                messages.append({"role": "user", "content": tool_results})
-        else:
-            break
-
-    # Extract the final text
     text = "".join(
         block.text for block in response.content if hasattr(block, "text")
     )
+    if not text:
+        raise RuntimeError(f"No text in response. stop_reason={response.stop_reason}")
     return text
 
 
