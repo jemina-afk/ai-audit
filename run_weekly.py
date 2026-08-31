@@ -127,8 +127,19 @@ def trigger_ghl_workflow(doc_url: str, highlights: list) -> None:
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def validate_env():
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        sys.exit("Missing ANTHROPIC_API_KEY — check your .env file.")
+    missing = [
+        var for var in ("ANTHROPIC_API_KEY", "GHL_WEBHOOK_URL")
+        if not os.environ.get(var)
+    ]
+    if missing:
+        sys.exit(
+            "Missing required environment variable(s): " + ", ".join(missing) + ".\n"
+            "Locally: check your .env file (see .env.example).\n"
+            "In GitHub Actions: add them as repository secrets at "
+            "Settings → Secrets and variables → Actions, so they populate "
+            "the `env:` block in .github/workflows/weekly_report.yml. "
+            "Without GHL_WEBHOOK_URL the report is generated but never emailed."
+        )
 
 
 def main():
